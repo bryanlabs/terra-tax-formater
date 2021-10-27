@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+import sys
+
+from terra_tax_formatter import terra_tax_formatter
+
+if __name__ == '__main__':
+    sys.exit(terra_tax_formatter.main())
