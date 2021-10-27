@@ -7,6 +7,9 @@ setup(
     author='bryanlabs',
     url='https://github.com/bryanlabs/terra-tax-formater',
     packages=["terra_tax_formatter"],
+    install_requires=[
+        "requests"
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
