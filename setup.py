@@ -13,9 +13,4 @@ setup(
         "Operating System :: OS Independent",
     ],
     scripts=["bin/terra-tax-formatter"],
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-    ],
 )
