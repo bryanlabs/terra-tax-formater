@@ -8,10 +8,11 @@ setup(
     url='https://github.com/bryanlabs/terra-tax-formater',
     packages=["terra_tax_formatter"],
     install_requires=[
-        "requests"
+        "requests",
+        "terra_sdk"
     ],
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
