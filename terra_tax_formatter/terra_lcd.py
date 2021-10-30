@@ -1,5 +1,4 @@
 from terra_sdk.client.lcd import LCDClient
-from terra_sdk.client.lcd import LCDClient
 
 terra_lcd_client = LCDClient("https://lcd.terra.dev", "columbus-5")
 

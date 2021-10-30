@@ -34,7 +34,6 @@ def validate_args(args):
 
     input_file = args["input_file"]
     output_file = args["output_file"]
-    errors = []
 
     if not os.path.isfile(get_file_realpath(input_file)):
         print('Specified input "--old" file does not exist')
