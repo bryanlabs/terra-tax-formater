@@ -27,7 +27,7 @@ def get_all_tx_for_address(terra_address):
             txs += data["txs"]
             
             if "next" in data.keys() and data["next"]:
-                sleep(5)
+                sleep(default_wait_time)
                 offset = data["next"]
             else:
                 break
