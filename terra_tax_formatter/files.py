@@ -16,5 +16,12 @@ def write_csv(fname, data_rows):
         for line in data_rows:
             writer.writerow(line)
 
+def write_csv_dict(fname, fieldnames, data, restval=""):
+    with open(get_file_realpath(fname), "w", newline="\n") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, restval=restval)
+        writer.writeheader()
+        for line in data:
+            writer.writerow(line)
+
 def get_file_realpath(fname):
     return os.path.realpath(os.path.join(os.getcwd(), fname))
