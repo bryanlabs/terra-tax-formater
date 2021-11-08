@@ -81,7 +81,6 @@ def main():
         print(error.message)
         return 1
     except Exception as error:
-        print(traceback.format_exc())
         print(error)
         print("An unknown error occurred, please contact the developer for assistance")
         return 1
