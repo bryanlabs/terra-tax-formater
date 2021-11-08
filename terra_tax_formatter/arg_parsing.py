@@ -14,10 +14,10 @@ def parse_args():
     --new str: A new filename to output data to
     
     """
-    arg_parser = argparse.ArgumentParser(description='Convert various CSV file formats to different formats', allow_abbrev=True)
+    arg_parser = argparse.ArgumentParser(description='Extend output from stake.tax, verify presence of all transactions for the address and output a file with the missing values', allow_abbrev=True)
     arg_parser.add_argument("--terra-address", type=str, help="The terra address to gather data for", required=True)
-    arg_parser.add_argument("--old", type=str, help="The file to convert from", required=True)
     arg_parser.add_argument("--new", type=str, help="The file to output to", required=True)
+    arg_parser.add_argument("--old", type=str, help="The stake.tax downloaded CSV file, if provided will use the file specified from the system instead of reaching out to stake.tax", required=False)
 
     args = arg_parser.parse_args()
 
@@ -25,7 +25,18 @@ def parse_args():
     input_file = args.old
     output_file = args.new
 
-    return {"terra_address": terra_address, "input_file": input_file, "output_file": output_file}
+    #mode for determining script run: download file from stake.tax or upload from system
+    mode = "file_download"
+    if input_file:
+        mode = "file_input"
+
+    if mode == "file_download":
+        uin = input(f"No input file specified, would you like to reach out to stake.tax directly? (Y/n) ")
+        if(uin != "Y"):
+            print("Cancelled")
+            sys.exit(1)
+
+    return {"terra_address": terra_address, "input_file": input_file, "output_file": output_file, "mode": mode}
 
 def validate_args(args):
     """
@@ -35,7 +46,7 @@ def validate_args(args):
     input_file = args["input_file"]
     output_file = args["output_file"]
 
-    if not os.path.isfile(get_file_realpath(input_file)):
+    if input_file and not os.path.isfile(get_file_realpath(input_file)):
         print('Specified input "--old" file does not exist')
         sys.exit(1)
 
