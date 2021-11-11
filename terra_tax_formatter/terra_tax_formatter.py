@@ -41,7 +41,7 @@ def main():
             stake_tax_unique_txs = dict.fromkeys(stake_tax_txs, True)
 
         #upload file from system
-        elif mode == "file_upload":
+        elif mode == "file_input":
             with open_file(input_file) as infile:
                 staketax_reader = list(csv.DictReader(infile))
                 stake_tax_txs = get_unique_tx_hashes(staketax_reader)
