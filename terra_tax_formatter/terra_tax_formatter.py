@@ -4,7 +4,6 @@ from .files import *
 from .arg_parsing import parse_args, validate_args
 from .exceptions import ConverterCaughtError
 from .terra_fcd import get_all_tx_for_address, make_txhash_map
-from .terra_lcd import get_tx_info_by_txhash
 from .stake_tax_csv_parsing import get_unique_tx_hashes, start_csv_process, track_job, download_csv, parse_csv_file_object
 import csv
 from datetime import datetime
@@ -34,7 +33,7 @@ def main():
             staketax_reader = parse_csv_file_object(in_mem_csv)
             if len(staketax_reader) > 0:
                 #save the file if it has rows
-                write_csv_dict(output_file + "-stake-tax-output", list(staketax_reader[0].keys()), staketax_reader, restval="")
+                write_csv_dict(output_file, list(staketax_reader[0].keys()), staketax_reader, restval="")
             else:
                 print("No transactions found for the stake.tax output")
 
@@ -75,7 +74,7 @@ def main():
 
         headers = ["Date", "Received Quantity", "Received Currency", "Sent Quantity", "Sent Currency" ,"Fee Amount", "Fee Currency", "Tag", "Transaction ID", "Finder URL"]
 
-        write_csv_dict(output_file, headers, new_rows, restval="")
+        write_csv_dict(output_file + "-missing", headers, new_rows, restval="")
 
     except ConverterCaughtError as error:
         print(error.message)
