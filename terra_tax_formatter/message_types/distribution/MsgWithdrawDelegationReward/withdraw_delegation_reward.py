@@ -10,5 +10,5 @@ BASE_WITHDRAW_MSG = {
     }
 }
 
-def parse(msg, log):
+def parse(msg, log, data_cache):
     pass

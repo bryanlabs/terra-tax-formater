@@ -1,5 +1,5 @@
-from message_types.wasm import WASM
-from message_types.distribution import DISTRIBUTION
+from .message_types import WASM
+from .message_types import DISTRIBUTION
 
 identifiers = {
     "wasm": WASM,
@@ -34,11 +34,14 @@ def identify(msg, log):
     return possible_identities
 
 def identify_message_type(msg, log, msg_identifier, log_identifier):
+    """
+    Determines the message type based on a possible message identifier
+    and optional log identifier (WIP)
+    """
 
     msg_type = msg["type"]
     msg_value = msg["value"]
 
-    # try base airdrop type
     if msg_type != msg_identifier["type"]:
         return False
 

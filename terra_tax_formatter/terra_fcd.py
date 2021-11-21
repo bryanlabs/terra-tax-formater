@@ -5,6 +5,8 @@ from .exceptions import ConverterCaughtError
 
 base_api_url = "https://fcd.terra.dev/v1"
 tx_endpoint = "/txs"
+base_wasm_url = "https://fcd.terra.dev/terra/wasm/v1beta1"
+contract_endpoint = "/contracts/<contract_address>"
 default_wait_time = 5
 
 
@@ -15,7 +17,6 @@ def get_paged_response(terra_address, offset=None):
     resp = requests.get(f"{base_api_url}{tx_endpoint}?account={terra_address}&limit=100{offset_str}")
     resp.raise_for_status()
     return resp.json()
-    
 
 def get_all_tx_for_address(terra_address):
     txs = []
@@ -33,9 +34,16 @@ def get_all_tx_for_address(terra_address):
                 break
         return txs
     except Exception as err:
-        print(err)
-        raise ConverterCaughtError("There was an error reaching out to the Terra FCD API, please try again later")
+        raise ConverterCaughtError("There was an error reaching out to the Terra FCD API for getting all transactions, please try again later")
 
 def make_txhash_map(txs):
     return  {tx["txhash"]: tx for tx in txs}
-        
+
+def get_contract_info(contract_address):
+    try:
+        contract_info = requests.get(base_wasm_url + contract_endpoint.replace("<contract_address>", contract_address))
+        contract_info.raise_for_status()
+        sleep(default_wait_time)
+        return contract_info.json()
+    except:
+        raise ConverterCaughtError(f"There was an error reaching out to the Terra FCD API for the contract address {contract_address} data, please try again later")

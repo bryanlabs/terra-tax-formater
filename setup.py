@@ -1,4 +1,5 @@
 from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(
     name='terra-tax-formatter',
@@ -6,7 +7,7 @@ setup(
     description='A tool to format Terra data into tax processing software CSV formats',
     author='bryanlabs',
     url='https://github.com/bryanlabs/terra-tax-formater',
-    packages=["terra_tax_formatter"],
+    packages=find_packages(),
     install_requires=[
         "requests"
     ],

@@ -7,6 +7,7 @@ from .terra_fcd import get_all_tx_for_address, make_txhash_map
 from .stake_tax_csv_parsing import get_unique_tx_hashes, start_csv_process, track_job, download_csv, parse_csv_file_object
 import csv
 from datetime import datetime
+from .identifiers import identify
 
 base_finder_url = "https://finder.terra.money/"
 
