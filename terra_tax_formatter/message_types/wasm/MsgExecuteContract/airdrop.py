@@ -56,7 +56,7 @@ def parse(msg, log, data_cache):
         token_info = get_contract_info(token_contract)
         data_cache["contracts"][token_contract] = token_info
 
-    symbol = token_info["contract_info"]["symbol"]
+    symbol = token_info["contract_info"]["init_msg"]["symbol"]
 
     return {"Received Quantity": amount, "Received Currency": symbol, "Tag": "airdrop"}
 

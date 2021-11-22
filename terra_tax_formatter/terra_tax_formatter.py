@@ -9,6 +9,11 @@ import csv
 from datetime import datetime
 from .identifiers import identify
 
+
+
+
+import traceback
+
 base_finder_url = "https://finder.terra.money/"
 
 def main():
@@ -63,15 +68,42 @@ def main():
 
         #for all of the txs not found in stake.tax output, build rows for each
         new_rows = []
+
+        fcd_data_cache = {"contracts": {}}
+
         for tx in not_found:
+            #skip failed txs
+            if "code" in tx.keys() and tx["code"] != 0:
+                continue
+
             tx_info = tx["tx"]
             messages = tx_info["value"]["msg"]
+            logs = tx["logs"]
             date = datetime.strptime(tx["timestamp"], "%Y-%m-%dT%H:%M:%SZ").strftime("%m/%d/%Y %H:%M:%S")
 
             #add a new row per message in the TX (might need to change if messages don't correspond directly to all actions)
-            for message in messages:
+            for index, (message, log) in enumerate(zip(messages, logs)):
                 url = f"{base_finder_url}{tx['chainId']}/tx/{tx['txhash']}"
-                new_rows.append({"Date": date, "Transaction ID": tx['txhash'], "Finder URL": url})
+
+                #get a list of possible message identities by identifying the message
+                possible_identities = identify(message, log)
+
+                #attempt to parse out the data for the message
+                parsed_value = None
+                for identity in possible_identities:
+                    try:
+                        parsed_value = identity["parser"](message, log, fcd_data_cache)
+                    except Exception as err:
+                        #skip this identity parser if parsing fails
+                        pass
+                
+                new_data = {"Date": date, "Transaction ID": tx['txhash'], "Finder URL": url}
+
+                #dict merge, let parsed values overwrite new data if needed
+                if parsed_value:
+                    new_data = {**new_data, **parsed_value}
+
+                new_rows.append(new_data)
 
         headers = ["Date", "Received Quantity", "Received Currency", "Sent Quantity", "Sent Currency" ,"Fee Amount", "Fee Currency", "Tag", "Transaction ID", "Finder URL"]
 
@@ -81,6 +113,7 @@ def main():
         print(error.message)
         return 1
     except Exception as error:
+        traceback.print_exc()
         print(error)
         print("An unknown error occurred, please contact the developer for assistance")
         return 1

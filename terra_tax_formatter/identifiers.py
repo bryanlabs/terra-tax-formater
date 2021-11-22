@@ -23,7 +23,7 @@ def identify(msg, log):
     try:
         identifier_class = identifiers[base_type][message_type]
     except KeyError:
-        return None
+        return []
 
     possible_identities = []
     for identifier in identifier_class:
