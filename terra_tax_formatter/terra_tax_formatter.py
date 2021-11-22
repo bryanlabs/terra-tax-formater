@@ -9,11 +9,6 @@ import csv
 from datetime import datetime
 from .identifiers import identify
 
-
-
-
-import traceback
-
 base_finder_url = "https://finder.terra.money/"
 
 def main():
@@ -113,8 +108,6 @@ def main():
         print(error.message)
         return 1
     except Exception as error:
-        traceback.print_exc()
-        print(error)
         print("An unknown error occurred, please contact the developer for assistance")
         return 1
 
