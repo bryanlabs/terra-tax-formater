@@ -36,7 +36,9 @@ BASE_AIRDROP_MSG_VALUE = {
 
 def parse(msg, log, data_cache):
     contract = msg["value"]["contract"]
+    
     amount = int(msg["value"]["execute_msg"]["claim"]["amount"]) / 1000000
+    amount = f"{int(amount)/1000000:.10f}"
 
     #get the airdrop contract
     contract_info = None

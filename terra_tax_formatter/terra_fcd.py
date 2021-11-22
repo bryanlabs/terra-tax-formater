@@ -7,8 +7,10 @@ base_api_url = "https://fcd.terra.dev/v1"
 tx_endpoint = "/txs"
 base_wasm_url = "https://fcd.terra.dev/terra/wasm/v1beta1"
 contract_endpoint = "/contracts/<contract_address>"
-default_wait_time = 5
+base_ibc_url = "https://fcd.terra.dev/ibc/apps/transfer/v1"
+denom_trace_endpoint = "/denom_traces/<hash>"
 
+default_wait_time = 5
 
 def get_paged_response(terra_address, offset=None):
     offset_str = ""
@@ -47,3 +49,12 @@ def get_contract_info(contract_address):
         return contract_info.json()
     except:
         raise ConverterCaughtError(f"There was an error reaching out to the Terra FCD API for the contract address {contract_address} data, please try again later")
+
+def get_ibc_denom_trace(hash):
+    try:
+        denom_trace = requests.get(base_ibc_url + denom_trace_endpoint.replace("<hash>", hash))
+        denom_trace.raise_for_status()
+        sleep(5)
+        return denom_trace.json()
+    except:
+        raise NameError(f"There was an error reaching out to the Terra FCD API for the IBC denom trace {hash} data, please try again later")

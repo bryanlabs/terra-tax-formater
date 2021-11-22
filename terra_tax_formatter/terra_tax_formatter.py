@@ -64,7 +64,10 @@ def main():
         #for all of the txs not found in stake.tax output, build rows for each
         new_rows = []
 
-        fcd_data_cache = {"contracts": {}}
+        fcd_data_cache = {
+            "contracts": {},
+            "ibc_denom_traces": {}
+        }
 
         for tx in not_found:
             #skip failed txs
@@ -95,10 +98,16 @@ def main():
                 new_data = {"Date": date, "Transaction ID": tx['txhash'], "Finder URL": url}
 
                 #dict merge, let parsed values overwrite new data if needed
-                if parsed_value:
+                if parsed_value and not isinstance(parsed_value, list):
                     new_data = {**new_data, **parsed_value}
-
-                new_rows.append(new_data)
+                    new_rows.append(new_data)
+                #list returns from parsed, loop through and dict merge
+                elif parsed_value and isinstance(parsed_value, list):
+                    for parsed in parsed_value:
+                        new_data = {**new_data, **parsed}
+                        new_rows.append(new_data)
+                else:
+                    new_rows.append(new_data)
 
         headers = ["Date", "Received Quantity", "Received Currency", "Sent Quantity", "Sent Currency" ,"Fee Amount", "Fee Currency", "Tag", "Transaction ID", "Finder URL"]
 
