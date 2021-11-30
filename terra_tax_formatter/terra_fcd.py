@@ -9,6 +9,8 @@ base_wasm_url = "https://fcd.terra.dev/terra/wasm/v1beta1"
 contract_endpoint = "/contracts/<contract_address>"
 base_ibc_url = "https://fcd.terra.dev/ibc/apps/transfer/v1"
 denom_trace_endpoint = "/denom_traces/<hash>"
+base_cosmos_url = "https://fcd.terra.dev/cosmos/bank/v1beta1"
+denom_metadata_endpoint = "/denoms_metadata/<denom>"
 
 default_wait_time = 5
 
@@ -54,7 +56,16 @@ def get_ibc_denom_trace(hash):
     try:
         denom_trace = requests.get(base_ibc_url + denom_trace_endpoint.replace("<hash>", hash))
         denom_trace.raise_for_status()
-        sleep(5)
+        sleep(default_wait_time)
         return denom_trace.json()
     except:
         raise NameError(f"There was an error reaching out to the Terra FCD API for the IBC denom trace {hash} data, please try again later")
+
+def get_denom_metadata(denom):
+    try:
+        denom_metadata = requests.get(base_cosmos_url + denom_metadata_endpoint.replace("<denom>", denom))
+        denom_metadata.raise_for_status()
+        sleep(default_wait_time)
+        return denom_metadata.json()
+    except:
+        raise NameError(f"There was an error reaching out to the Terra FCD API for the denom metadata {denom} data, please try again later")

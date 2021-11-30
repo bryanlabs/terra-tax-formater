@@ -6,7 +6,7 @@ import codecs
 import csv
 
 API_URL = "https://prodapi.stake.tax"
-CSV_URL = "https://prodcsv.stake.tax/csv/<job_id>/cointracker.csv"
+CSV_URL = "https://prodcsv.stake.tax/csv/<job_id><format>"
 TX_ENDPOINT = "/txs"
 
 def start_csv_process(address_id):
@@ -40,13 +40,13 @@ def track_job(job_id):
         print(f"Error while tracking stake.tax job id {job_id}")
         sys.exit(1)
 
-def download_csv(job_id):
+def download_csv(job_id, format):
     try:
-        download_resp = requests.get(CSV_URL.replace("<job_id>", job_id), stream=True)
+        download_resp = requests.get(CSV_URL.replace("<job_id>", job_id).replace("<format>", format.stake_tax_endpoint), stream=True)
         download_resp.raise_for_status()
         return download_resp
     except Exception as err:
-        print(f"Error while tracking stake.tax job id {job_id}")
+        print(f"Error while downloading stake.tax output file for job id {job_id}")
         sys.exit(1)
 
 def parse_csv_file_object(file_obj):
@@ -57,6 +57,3 @@ def parse_csv_file_object(file_obj):
                 codecs.iterdecode(file_obj.iter_lines(), 'utf-8')
             )
         )
-
-def get_unique_tx_hashes(stake_tax_csv_list):
-    return list(set([tx["Transaction ID"] for tx in stake_tax_csv_list]))

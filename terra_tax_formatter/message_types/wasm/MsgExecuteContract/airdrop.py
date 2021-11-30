@@ -37,7 +37,7 @@ BASE_AIRDROP_MSG_VALUE = {
 def parse(msg, log, data_cache):
     contract = msg["value"]["contract"]
     
-    amount = int(msg["value"]["execute_msg"]["claim"]["amount"]) / 1000000
+    amount = int(msg["value"]["execute_msg"]["claim"]["amount"])
     amount = f"{int(amount)/1000000:.10f}"
 
     #get the airdrop contract
@@ -60,7 +60,7 @@ def parse(msg, log, data_cache):
 
     symbol = token_info["contract_info"]["init_msg"]["symbol"]
 
-    return {"Received Quantity": amount, "Received Currency": symbol, "Tag": "airdrop"}
+    return {"received quantity": amount, "received currency": symbol, "type": "airdrop"}
 
 
 def get_contract_token_address(contract_info):

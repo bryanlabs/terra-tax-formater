@@ -9,7 +9,8 @@ setup(
     url='https://github.com/bryanlabs/terra-tax-formater',
     packages=find_packages(),
     install_requires=[
-        "requests"
+        "requests",
+        "openpyxl"
     ],
     classifiers=[
         "Programming Language :: Python :: 3.7",

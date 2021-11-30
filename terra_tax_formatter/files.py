@@ -1,11 +1,11 @@
 import os
 import csv
 
-def open_file(fname):
+def open_file(fname, file_mode="r"):
     """
     Opens files safely using realpath and CWD + filename
     """
-    return open(get_file_realpath(fname), "r")
+    return open(get_file_realpath(fname), file_mode)
 
 def write_csv(fname, data_rows):
     """

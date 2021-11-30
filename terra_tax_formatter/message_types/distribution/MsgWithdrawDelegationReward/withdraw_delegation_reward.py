@@ -1,5 +1,5 @@
 import re
-from ....terra_fcd import get_ibc_denom_trace
+from ....terra_fcd import get_ibc_denom_trace, get_denom_metadata
 
 BASE_WITHDRAW_MSG = {
     "type": "distribution/MsgWithdrawDelegationReward",
@@ -61,29 +61,43 @@ def parse(msg, log, data_cache):
                 denom_trace = get_ibc_denom_trace(hash)
                 data_cache["ibc_denom_traces"][hash] = denom_trace
             
-            utoken = denom_trace["denom_trace"]["base_denom"]
+            denom = denom_trace["denom_trace"]["base_denom"]
 
-            #this is how Terra Station currently does it, valid?
-            #see https://github.com/terra-money/station/blob/main/src/utils/format.ts#L38
-            symbol = utoken.replace("u", "").upper()
+            symbol = None
+            try:
+                denom_metadata = data_cache["denoms"][denom]
+                symbol = denom_metadata["metadata"]["symbol"]
+            except:
+                symbol = parse_denom(denom, data_cache)
+
+            
             coins_parsed.append((amount, symbol))
         else:
             regex = re.compile("(\d+)(\w+)")
             match = regex.match(coin)
-            amount, utoken = match.group(1), match.group(2)
+            amount, denom = match.group(1), match.group(2)
             #10 decimal precision enough?
             amount = f"{int(amount)/1000000:.10f}"
-            #see above comment
-            symbol = utoken.replace("u", "").upper()
+            symbol = None
+            try:
+                denom_metadata = data_cache["denoms"][denom]
+                symbol = denom_metadata["metadata"]["symbol"]
+            except:
+                symbol = parse_denom(denom, data_cache)
+
             coins_parsed.append((amount, symbol))
 
     txs = []
     for coin in coins_parsed:
-        txs.append({"Received Quantity": coin[0], "Received Currency": coin[1]})
+        txs.append({"received quantity": coin[0], "received currency": coin[1]})
     
     return txs
-            
 
-
-    
-    
+def parse_denom(denom, data_cache):
+    try:
+        denom_metadata = get_denom_metadata(denom)
+        data_cache["denoms"][denom] = denom_metadata
+        return denom_metadata["metadata"]["symbol"]
+    except:
+        #fallback to stripping the first letter off the token (probably invalid)
+        return denom[1:].upper()

@@ -18,12 +18,14 @@ def parse_args():
     arg_parser.add_argument("--terra-address", type=str, help="The terra address to gather data for", required=True)
     arg_parser.add_argument("--new", type=str, help="The file to output to", required=True)
     arg_parser.add_argument("--old", type=str, help="The stake.tax downloaded CSV file, if provided will use the file specified from the system instead of reaching out to stake.tax", required=False)
+    arg_parser.add_argument("--format", type=str, help="The tax tracking software, determines the output file format (will affect file type and data headers)", required=False, choices=["accointing", "cointracker"], default="accointing")
 
     args = arg_parser.parse_args()
 
     terra_address = args.terra_address
     input_file = args.old
     output_file = args.new
+    format = args.format
 
     #mode for determining script run: download file from stake.tax or upload from system
     mode = "file_download"
@@ -36,7 +38,7 @@ def parse_args():
             print("Cancelled")
             sys.exit(1)
 
-    return {"terra_address": terra_address, "input_file": input_file, "output_file": output_file, "mode": mode}
+    return {"terra_address": terra_address, "input_file": input_file, "output_file": output_file, "mode": mode, "format": format}
 
 def validate_args(args):
     """
