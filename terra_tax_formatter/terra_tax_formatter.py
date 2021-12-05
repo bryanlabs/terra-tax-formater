@@ -4,9 +4,15 @@ from .files import *
 from .arg_parsing import parse_args, validate_args
 from .exceptions import ConverterCaughtError
 from .terra_fcd import get_all_tx_for_address, make_txhash_map
-from .stake_tax_csv_parsing import get_unique_tx_hashes, start_csv_process, track_job, download_csv, parse_csv_file_object
+from .stake_tax_csv_parsing import start_csv_process, track_job, download_csv
 import csv
 from datetime import datetime
+from .identifiers import identify
+from .formatters import FORMATS
+
+
+import sys, traceback
+
 
 base_finder_url = "https://finder.terra.money/"
 
@@ -18,33 +24,34 @@ def main():
     input_file = args["input_file"]
     output_file = args["output_file"]
     mode = args["mode"]
+    formatter = FORMATS[args["format"]]()
 
     try:
         stake_tax_txs = []
         stake_tax_unique_txs = {}
-        staketax_reader = None
 
         #download file directly from stake.tax
         if mode == "file_download":
             job_start = start_csv_process(terra_address)
             track_job(job_start["job_id"])
-            in_mem_csv = download_csv(job_start["job_id"])
+            in_mem_csv = download_csv(job_start["job_id"], formatter)
 
-            staketax_reader = parse_csv_file_object(in_mem_csv)
-            if len(staketax_reader) > 0:
+            values = formatter.parse_response_data(in_mem_csv)
+            
+            if len(values) > 0:
                 #save the file if it has rows
-                write_csv_dict(output_file, list(staketax_reader[0].keys()), staketax_reader, restval="")
+                formatter.write_data(values, get_file_realpath(output_file))
             else:
                 print("No transactions found for the stake.tax output")
 
-            stake_tax_txs = get_unique_tx_hashes(staketax_reader)
+            stake_tax_txs = formatter.get_unique_tx_hashes(values)
             stake_tax_unique_txs = dict.fromkeys(stake_tax_txs, True)
 
         #upload file from system
         elif mode == "file_input":
-            with open_file(input_file) as infile:
-                staketax_reader = list(csv.DictReader(infile))
-                stake_tax_txs = get_unique_tx_hashes(staketax_reader)
+            with open_file(get_file_realpath(input_file), file_mode=formatter.read_file_mode) as infile:
+                values = formatter.parse_file_data(infile)
+                stake_tax_txs = formatter.get_unique_tx_hashes(values)
                 stake_tax_unique_txs = dict.fromkeys(stake_tax_txs, True)
 
         all_fcd_txs = get_all_tx_for_address(terra_address)
@@ -62,24 +69,65 @@ def main():
 
         #for all of the txs not found in stake.tax output, build rows for each
         new_rows = []
+
+        fcd_data_cache = {
+            "contracts": {},
+            "ibc_denom_traces": {},
+            "denoms": {}
+        }
+
         for tx in not_found:
+            #skip failed txs
+            if "code" in tx.keys() and tx["code"] != 0:
+                continue
+
             tx_info = tx["tx"]
             messages = tx_info["value"]["msg"]
-            date = datetime.strptime(tx["timestamp"], "%Y-%m-%dT%H:%M:%SZ").strftime("%m/%d/%Y %H:%M:%S")
+            logs = tx["logs"]
+
+            date = formatter.format_date(datetime.strptime(tx["timestamp"], "%Y-%m-%dT%H:%M:%SZ"))
 
             #add a new row per message in the TX (might need to change if messages don't correspond directly to all actions)
-            for message in messages:
+            for index, (message, log) in enumerate(zip(messages, logs)):
                 url = f"{base_finder_url}{tx['chainId']}/tx/{tx['txhash']}"
-                new_rows.append({"Date": date, "Transaction ID": tx['txhash'], "Finder URL": url})
 
-        headers = ["Date", "Received Quantity", "Received Currency", "Sent Quantity", "Sent Currency" ,"Fee Amount", "Fee Currency", "Tag", "Transaction ID", "Finder URL"]
+                #get a list of possible message identities by identifying the message
+                possible_identities = identify(message, log)
 
-        write_csv_dict(output_file + "-missing", headers, new_rows, restval="")
+                # #attempt to parse out the data for the message
+                parsed_value = None
+                for identity in possible_identities:
+                    try:
+                        parsed_value = identity["parser"](message, log, fcd_data_cache)
+                    except Exception as err:
+                        #skip this identity parser if parsing fails
+                        pass
+                
+                new_data = {"date": date, "txhash": tx['txhash'], "finder_url": url}
+
+                #dict merge, let parsed values overwrite new data if needed
+                if parsed_value and not isinstance(parsed_value, list):
+                    new_data = {**new_data, **parsed_value}
+                    new_rows.append(new_data)
+                #list returns from parsed, loop through and dict merge
+                elif parsed_value and isinstance(parsed_value, list):
+                    for parsed in parsed_value:
+                        new_data = {**new_data, **parsed}
+                        new_rows.append(new_data)
+                else:
+                    new_rows.append(new_data)
+
+                new_rows.append(new_data)
+
+        formatted_data = formatter.format_data(new_rows)
+        formatter.write_data(formatted_data, get_file_realpath(output_file + "-missing"))
+
 
     except ConverterCaughtError as error:
         print(error.message)
         return 1
     except Exception as error:
+        print(traceback.format_exc())
         print(error)
         print("An unknown error occurred, please contact the developer for assistance")
         return 1
