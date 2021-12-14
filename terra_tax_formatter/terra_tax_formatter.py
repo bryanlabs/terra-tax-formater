@@ -103,6 +103,10 @@ def main():
                         #skip this identity parser if parsing fails
                         pass
                 
+                #if parser returned non-taxable, assume nontaxable
+                if parsed_value == "non-taxable":
+                    continue
+
                 new_data = {"date": date, "txhash": tx['txhash'], "finder_url": url}
 
                 #dict merge, let parsed values overwrite new data if needed
